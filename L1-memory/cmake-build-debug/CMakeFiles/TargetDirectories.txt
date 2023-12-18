@@ -1,0 +1,3 @@
+/home/makar/Study/4/pl&vm/homework/L1-memory/cmake-build-debug/CMakeFiles/L1_memory.dir
+/home/makar/Study/4/pl&vm/homework/L1-memory/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/makar/Study/4/pl&vm/homework/L1-memory/cmake-build-debug/CMakeFiles/rebuild_cache.dir
