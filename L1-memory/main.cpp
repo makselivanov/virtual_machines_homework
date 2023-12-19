@@ -2,6 +2,7 @@
 #include <iostream>
 #include <map>
 #include <random>
+#include <algorithm>
 
 /**
  * | Измерение                          | lscpu --cache | измеренные |
@@ -28,17 +29,17 @@ struct measured_time {
     double nano_per_loop;
 };
 const size_t DEFAULT_LOOP_SIZE = 1 << 20;
-const size_t MAX_SIZE = 1 << 22;
+const size_t MAX_SIZE = 1 << 23;
 const double TIME_THRESHOLD = 1.2;
 const size_t MAX_ASSOC = 128;
-const size_t MIN_ASSOC = 1;
-const size_t MIN_WAY_SIZE = 1 << 16; //16
+const size_t MIN_ASSOC = 4;
+const size_t MIN_WAY_SIZE = 1 << 8; //16
 const size_t MAX_WAY_SIZE = 1 << 20;
-const size_t EPOCHS = 10;
+const size_t EPOCHS = 20;
 std::random_device dev;
 std::mt19937 rng(dev());
 
-alignas(256) size_t array[MAX_SIZE];
+alignas(256) uint32_t array[MAX_SIZE];
 
 measured_time
 measure(size_t assoc_size, size_t loop_size = DEFAULT_LOOP_SIZE) {
@@ -61,10 +62,12 @@ measure(size_t assoc_size, size_t loop_size = DEFAULT_LOOP_SIZE) {
 }
 
 void generate_test_array(size_t size, size_t step) {
-    for (size_t i = 1; i < size; ++i) {
-        size_t j = std::uniform_int_distribution<>(0, int(i) - 1)(rng);
-        array[i * step] = array[j * step];
-        array[j * step] = i * step;
+    step /= sizeof(uint32_t);
+    std::vector<int> buffer(size);
+    std::iota(buffer.begin(), buffer.end(), 0);
+    std::shuffle(buffer.begin()+1, buffer.end(), rng);
+    for (size_t i = 0; i < size; ++i) {
+        array[buffer[i] * step] = buffer[(i + 1) % size] * step;
     }
 }
 
@@ -76,7 +79,7 @@ info_L1 get_cache_size_and_associativity() {
     for (size_t way_size = MIN_WAY_SIZE; way_size < MAX_WAY_SIZE; way_size *= 2) {
         size_t prev_assoc = MIN_ASSOC;
         for (size_t assoc = MIN_ASSOC; assoc < MAX_ASSOC; assoc += 2) {
-            if (assoc * way_size < MAX_SIZE) {
+            if (assoc * way_size < sizeof(uint32_t) * MAX_SIZE) {
                 //generate
                 generate_test_array(assoc, way_size);
                 //measure
