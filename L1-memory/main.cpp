@@ -1,6 +1,5 @@
 #include <chrono>
 #include <iostream>
-#include <vector>
 #include <map>
 #include <random>
 
@@ -15,66 +14,115 @@ struct info_L1 {
     size_t cache_size;
     size_t cache_line;
     size_t associativity;
+
+    bool operator<(const info_L1 &other) const {
+        return cache_size < other.cache_size || (cache_size == other.cache_size &&
+                                                 (associativity < other.associativity ||
+                                                  (associativity == other.associativity &&
+                                                   cache_line < other.cache_line)));
+    }
 };
 
-std::chrono::duration<double, std::milli>
-measure(std::vector<size_t> &array, size_t shift = 0, size_t loop_size = (1 << 20)) {
-    size_t index = array[shift];
+struct measured_time {
+    std::chrono::duration<double, std::nano> total;
+    double nano_per_loop;
+};
+const size_t DEFAULT_LOOP_SIZE = 1 << 20;
+const size_t MAX_SIZE = 1 << 22;
+const double TIME_THRESHOLD = 1.2;
+const size_t MAX_ASSOC = 128;
+const size_t MIN_ASSOC = 1;
+const size_t MIN_WAY_SIZE = 1 << 16; //16
+const size_t MAX_WAY_SIZE = 1 << 20;
+const size_t EPOCHS = 10;
+std::random_device dev;
+std::mt19937 rng(dev());
+
+alignas(256) size_t array[MAX_SIZE];
+
+measured_time
+measure(size_t assoc_size, size_t loop_size = DEFAULT_LOOP_SIZE) {
+    //cache
+    size_t index = 0;
+    for (size_t loop = 0; loop < assoc_size; loop++) {
+        index = array[index];
+    }
+    index = 0;
+    //measure
     auto start = std::chrono::high_resolution_clock::now();
     //pointer chaser for array
     for (size_t loop = 0; loop < loop_size; loop++) {
         index = array[index];
     }
     auto finish = std::chrono::high_resolution_clock::now();
-    auto duration = finish - start;
-    return duration;
+    std::chrono::duration<double, std::nano> duration = finish - start;
+    double duration_per_loop = double(duration.count()) / loop_size;
+    return {duration, duration_per_loop};
 }
 
-info_L1 get_cache_size_and_associativity(size_t max_size, size_t max_way_size) {
-    fprintf(stderr, "Calculating cache size and associativity\n");
-    fprintf(stderr, "way_size, associativity, measurement\n");
-    std::random_device dev;
-    std::mt19937 rng(dev());
-    info_L1 result = {
-            .cache_size = 0,
-            .cache_line = 0,
-            .associativity = 0,
-    };
-    size_t way_size = max_way_size;
-    size_t assoc_prev = 0;
-    std::map<size_t, std::chrono::duration<double, std::milli>> measurements;
-    while (true) {
-        for (size_t assoc = 1;; assoc += 1) {
-            //generate
-            std::vector<size_t> array(way_size * assoc);
-            for (size_t i = 0; i < assoc; ++i) {
-                size_t j = std::uniform_int_distribution<>(0, int(i))(rng);
-                array[i * way_size] = array[j * way_size];
-                array[j * way_size] = i * way_size;
-            }
-            //measure
-            measurements[assoc] = measure(array);
-            fprintf(stderr, "%lu, %lu, %f\n", way_size, assoc, measurements[assoc].count());
-            //TODO Save measurements to log?
-            if (assoc != 1 && measurements[assoc] > 1.01 * measurements[assoc - 1]) {
-                if (assoc - 1 == 2 * assoc_prev) {
-                    result = {
-                            .cache_size = way_size * 2 * assoc_prev,
-                            .associativity = assoc_prev
-                    };
-                    return result;
-                } else {
-                    assoc_prev = assoc - 1;
-                    break;
-                }
-            }
-        }
-        way_size = way_size / 2;
+void generate_test_array(size_t size, size_t step) {
+    for (size_t i = 1; i < size; ++i) {
+        size_t j = std::uniform_int_distribution<>(0, int(i) - 1)(rng);
+        array[i * step] = array[j * step];
+        array[j * step] = i * step;
     }
 }
 
-info_L1 get_info_about_L1_memory(size_t max_size = 5000000, size_t max_way_size = 1u << 20) {
-    info_L1 result = get_cache_size_and_associativity(max_size, max_way_size);
+info_L1 get_cache_size_and_associativity() {
+//    fprintf(stderr, "Calculating cache size and associativity\n");
+//    fprintf(stderr, "way_size, associativity, total nano sec, nano sec per loop\n");
+    std::map<size_t, size_t> counter_for_cache, min_assoc_for_cache;
+    std::map<size_t, measured_time> measurements;
+    for (size_t way_size = MIN_WAY_SIZE; way_size < MAX_WAY_SIZE; way_size *= 2) {
+        size_t prev_assoc = MIN_ASSOC;
+        for (size_t assoc = MIN_ASSOC; assoc < MAX_ASSOC; assoc += 2) {
+            if (assoc * way_size < MAX_SIZE) {
+                //generate
+                generate_test_array(assoc, way_size);
+                //measure
+                measurements[assoc] = measure(assoc);
+//                fprintf(stderr, "%lu, %lu, %f, %f\n", way_size, assoc, measurements[assoc].total.count(),
+//                        measurements[assoc].nano_per_loop);
+                if (assoc != MIN_ASSOC &&
+                    measurements[assoc].nano_per_loop > TIME_THRESHOLD * measurements[prev_assoc].nano_per_loop) {
+                    size_t cache_size = prev_assoc * way_size;
+                    min_assoc_for_cache[cache_size] = prev_assoc;
+                    counter_for_cache[cache_size]++;
+                }
+                prev_assoc = assoc;
+            } else {
+                break;
+            }
+        }
+    }
+    size_t max_count = 0;
+    size_t cache_size = 0, assoc = 0;
+    for (auto [curr_cache_size, count]: counter_for_cache) {
+        if (count > max_count || (count == max_count && curr_cache_size < cache_size)) {
+            cache_size = curr_cache_size;
+            max_count = count;
+            assoc = min_assoc_for_cache[cache_size];
+        }
+    }
+    return {.cache_size = cache_size, .associativity = assoc};
+}
+
+info_L1 get_info_about_L1_memory() {
+    std::map<info_L1, size_t> counter;
+    fprintf(stderr, "Calculating cache size and associativity\n");
+    for (int epoch = 0; epoch < EPOCHS; ++epoch) {
+        fprintf(stderr, "Current epoch %d of %zu\n", epoch + 1, EPOCHS);
+        info_L1 buffer = get_cache_size_and_associativity();
+        counter[buffer]++;
+    }
+    info_L1 result{};
+    size_t max_count = 0;
+    for (auto [measure, count]: counter) {
+        if (count > max_count) {
+            max_count = count;
+            result = measure;
+        }
+    }
     return result;
 }
 
