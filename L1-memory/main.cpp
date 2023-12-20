@@ -139,7 +139,7 @@ info_L1 get_cache_line(size_t cache_size, size_t associativity) {
     for (int cache_line = MIN_CACHE_LINE; cache_line <= cache_size / associativity; cache_line *= 2) {
         size_t len = generate_test_array_for_line(cache_size, associativity, cache_line);
         measured_time time = measure(len);
-        fprintf(stderr, "%d, %f, %f\n", cache_line, time.total.count(), time.nano_per_loop);
+        //fprintf(stderr, "%d, %f, %f\n", cache_line, time.total.count(), time.nano_per_loop);
         if (cache_line != MIN_CACHE_LINE && prev_time.nano_per_loop > TIME_THRESHOLD * time.nano_per_loop) {
             result.cache_line = cache_line * sizeof(uint32_t);
             return result;
