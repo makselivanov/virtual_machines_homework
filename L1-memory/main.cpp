@@ -76,11 +76,11 @@ void generate_test_array(size_t size, size_t step) {
 info_L1 get_cache_size_and_associativity() {
 //    fprintf(stderr, "Calculating cache size and associativity\n");
 //    fprintf(stderr, "way_size, associativity, total nano sec, nano sec per loop\n");
-    std::map<size_t, size_t> counter_for_cache, min_assoc_for_cache;
     std::map<size_t, measured_time> measurements;
-    for (size_t way_size = MIN_WAY_SIZE; way_size < MAX_WAY_SIZE; way_size *= 2) {
+    size_t prev_jump_assoc = MIN_ASSOC;
+    for (size_t way_size = MAX_WAY_SIZE; way_size >= MIN_WAY_SIZE; way_size /= 2) {
         size_t prev_assoc = MIN_ASSOC;
-        for (size_t assoc = MIN_ASSOC; assoc < MAX_ASSOC; assoc += 2) {
+        for (size_t assoc = MIN_ASSOC; assoc < MAX_ASSOC; assoc++) {
             if (assoc * way_size < sizeof(uint32_t) * MAX_SIZE) {
                 //generate
                 generate_test_array(assoc, way_size);
@@ -90,9 +90,12 @@ info_L1 get_cache_size_and_associativity() {
 //                        measurements[assoc].nano_per_loop);
                 if (assoc != MIN_ASSOC &&
                     measurements[assoc].nano_per_loop > TIME_THRESHOLD * measurements[prev_assoc].nano_per_loop) {
-                    size_t cache_size = prev_assoc * way_size;
-                    min_assoc_for_cache[cache_size] = prev_assoc;
-                    counter_for_cache[cache_size]++;
+                    if (assoc - 1 == 2 * prev_jump_assoc) {
+                        return {.cache_size = way_size / sizeof(uint32_t) * prev_jump_assoc, .associativity = 2 * prev_jump_assoc};
+                    } else {
+                        prev_jump_assoc = assoc - 1;
+                        break;
+                    }
                 }
                 prev_assoc = assoc;
             } else {
@@ -100,16 +103,6 @@ info_L1 get_cache_size_and_associativity() {
             }
         }
     }
-    size_t max_count = 0;
-    size_t cache_size = 0, assoc = 0;
-    for (auto [curr_cache_size, count]: counter_for_cache) {
-        if (count > max_count || (count == max_count && curr_cache_size < cache_size)) {
-            cache_size = curr_cache_size;
-            max_count = count;
-            assoc = min_assoc_for_cache[cache_size];
-        }
-    }
-    return {.cache_size = cache_size, .associativity = assoc};
 }
 
 size_t generate_test_array_for_line(size_t cache_size, size_t associativity, size_t cache_line) {
@@ -167,6 +160,8 @@ info_L1 get_info_about_L1_memory() {
         }
     }
     counter.clear();
+    fprintf(stderr, "Current cache size: %lu\n", result.cache_size);
+    fprintf(stderr, "Current associativity: %lu\n", result.associativity);
     fprintf(stderr, "Calculating cache line\n");
     for (int epoch = 0; epoch < EPOCHS; ++epoch) {
         fprintf(stderr, "Current epoch %d of %zu\n", epoch + 1, EPOCHS);
