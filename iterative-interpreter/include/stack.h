@@ -60,7 +60,7 @@ namespace stack {
 
     inline void reverse(int32_t n) {
         if (size() < n) {
-            failure("STACK: reverse: stack is too small\n");
+            failure("STACK: reverse: stack is too small, size=%d, n=%d\n", size(), n);
         }
         int32_t *top = __gc_stack_top;
         int32_t *bot = top + n - 1;

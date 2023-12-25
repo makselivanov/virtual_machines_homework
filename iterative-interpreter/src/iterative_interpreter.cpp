@@ -31,8 +31,9 @@ iterative_interpreter::iterative_interpreter(bytefile *file) : bf(file), ip(bf->
     stack::init();
 
     fp = stack::get_stack_top();
+    stack::reserve(2);
     stack::push(reinterpret_cast<int32_t>(nullptr));
-    stack::push(0);
+    stack::push(2);
 }
 
 iterative_interpreter::~iterative_interpreter() {
@@ -255,6 +256,7 @@ void iterative_interpreter::eval_callc(int32_t argc) {
 }
 
 void iterative_interpreter::eval_call(int32_t addr, int32_t argc) {
+    //fprintf(stderr, "eval_call addr=%d, argc=%d\n", addr, argc);
     stack::reverse(argc);
     stack::push(reinterpret_cast<int32_t>(ip));
     stack::push(argc);
@@ -347,7 +349,9 @@ void iterative_interpreter::eval() {
         char x = BYTE,
                 h = (x & 0xF0) >> 4,
                 l = x & 0x0F;
-
+        //fprintf(stderr, "h = %d | l = %d\n", h, l);
+        int arg1, arg2;
+        char *str;
         switch (h) {
             case 15:
                 return;
@@ -368,7 +372,8 @@ void iterative_interpreter::eval() {
                         break;
 
                     case 2:
-                        eval_sexp(STRING, INT);
+                        str = STRING;
+                        eval_sexp(str, INT);
                         break;
 
                     case 4:
@@ -426,11 +431,13 @@ void iterative_interpreter::eval() {
 
                     case 2:
                     case 3:
-                        eval_begin(INT, INT);
+                        arg1 = INT;
+                        eval_begin(arg1, INT);
                         break;
 
                     case 4:
-                        eval_closure(INT, INT);
+                        arg1 = INT;
+                        eval_closure(arg1, INT);
                         break;
 
                     case 5:
@@ -438,11 +445,13 @@ void iterative_interpreter::eval() {
                         break;
 
                     case 6:
-                        eval_call(INT, INT);
+                        arg1 = INT;
+                        eval_call(arg1, INT);
                         break;
 
                     case 7:
-                        eval_tag(STRING, INT);
+                        str = STRING;
+                        eval_tag(str, INT);
                         break;
 
                     case 8:
@@ -450,7 +459,8 @@ void iterative_interpreter::eval() {
                         break;
 
                     case 9:
-                        eval_fail(INT, INT);
+                        arg1 = INT;
+                        eval_fail(arg1, INT);
                         break;
 
                     case 10:
