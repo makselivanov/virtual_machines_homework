@@ -1,7 +1,7 @@
 TESTS=$(sort $(basename $(wildcard generated*.lama)))
 
-LAMAC=../src/lamac
-MAINC=../build/main
+LAMAC=../../src/lamac
+MAINC=../../build/main
 
 .PHONY: check $(TESTS)
 

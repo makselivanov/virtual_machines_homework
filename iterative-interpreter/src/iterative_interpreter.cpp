@@ -11,6 +11,7 @@ extern void *Bsexp_arr(int bn, int tag, int *values);
 extern int LtagHash(char *s);
 extern void *Bsta(void *v, int i, void *x);
 extern void *Belem(void *p, int i);
+extern void* Belem_closure (void *p, int i);
 extern int Btag(void *d, int t, int n);
 extern int Barray_patt(void *d, int n);
 extern int Bstring_patt(void *x, void *y);
@@ -64,7 +65,7 @@ int32_t *iterative_interpreter::args(int32_t i) {
 int32_t *iterative_interpreter::binded(int32_t i) {
     int32_t nargs = *(fp + 1);
     auto id = reinterpret_cast<int32_t *>(*args(nargs - 1));
-    auto result = reinterpret_cast<int32_t>(Belem(id, box(i + 1)));
+    auto result = reinterpret_cast<int32_t>(Belem_closure(id, box(i + 1)));
 
     return reinterpret_cast<int32_t *>(result);
 }
