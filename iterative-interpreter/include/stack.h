@@ -6,7 +6,7 @@ extern "C" {
 };
 
 #include "utility"
-
+//#define DEBUG_PRINT 1
 
 extern int32_t *__gc_stack_top, *__gc_stack_bottom;
 
@@ -73,6 +73,9 @@ namespace stack {
         if (size() < 1) {
             failure("STACK: pop - stack is empty\n");
         }
+#ifdef DEBUG_PRINT
+        printf("stack: pop - %d\n", *__gc_stack_top);
+#endif
         return *(__gc_stack_top++);
     }
 
@@ -88,6 +91,9 @@ namespace stack {
         if (empty_size() < 1) {
             failure("STACK: push - not enough empty space\n");
         }
+#ifdef DEBUG_PRINT
+        printf("stack: push - %d\n", value);
+#endif
 
         *(--__gc_stack_top) = value;
     }

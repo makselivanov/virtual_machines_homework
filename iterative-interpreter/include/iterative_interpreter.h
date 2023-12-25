@@ -38,7 +38,7 @@ private:
 
     void eval_const(int32_t value);
 
-    void eval_string(int32_t offset);
+    void eval_string(char *str);
 
     void eval_sexp(char *name, int n);
 

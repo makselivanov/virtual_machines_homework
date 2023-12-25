@@ -1,3 +1,5 @@
+//#define DEBUG_PRINT 1
+
 #include "iterative_interpreter.h"
 #include <exception>
 #include <stdexcept>
@@ -25,6 +27,11 @@ extern void *Lstring(void *p);
 extern void *Barray_arr(int bn, int *values);
 extern void *Bclosure_arr(int bn, void *entry, int *values);
 }
+
+# define INT    (ip += sizeof (int), *(int*)(ip - sizeof (int)))
+# define BYTE   *ip++
+# define STRING get_string (this->bf, INT)
+# define FAIL   failure ("ERROR: invalid opcode %d-%d\n", h, l)
 
 iterative_interpreter::iterative_interpreter(bytefile *file) : bf(file), ip(bf->code_ptr) {
     __init();
@@ -83,6 +90,7 @@ void iterative_interpreter::jmp(int32_t addr) {
     ip = bf->code_ptr + addr;
 }
 
+
 void iterative_interpreter::eval_binop(char op) {
     int32_t y = stack::unbox_pop();
     int32_t x = stack::unbox_pop();
@@ -137,8 +145,8 @@ void iterative_interpreter::eval_const(int value) {
     stack::push_box(value);
 }
 
-inline void iterative_interpreter::eval_string(int offset) {
-    stack::push_box(reinterpret_cast<int64_t>(Bstring(bf->string_ptr + offset)));
+inline void iterative_interpreter::eval_string(char *str) {
+    stack::push(reinterpret_cast<int32_t>(Bstring(str)));
 }
 
 inline void iterative_interpreter::eval_sexp(char *name, int n) {
@@ -232,10 +240,6 @@ void iterative_interpreter::eval_begin(int32_t argc, int32_t nlocals) {
 
 void iterative_interpreter::eval_closure(int32_t addr, int32_t argc) {
     int32_t args[argc];
-# define INT    (ip += sizeof (int), *(int*)(ip - sizeof (int)))
-# define BYTE   *ip++
-# define STRING get_string (this->bf, INT)
-
     for (int i = 0; i < argc; i++) {
         char l = BYTE;
         int value = INT;
@@ -256,7 +260,7 @@ void iterative_interpreter::eval_callc(int32_t argc) {
 }
 
 void iterative_interpreter::eval_call(int32_t addr, int32_t argc) {
-    //fprintf(stderr, "eval_call addr=%d, argc=%d\n", addr, argc);
+    //fprintf(stdout, "eval_call addr=%d, argc=%d\n", addr, argc);
     stack::reverse(argc);
     stack::push(reinterpret_cast<int32_t>(ip));
     stack::push(argc);
@@ -325,15 +329,16 @@ void iterative_interpreter::eval_call_lwrite() {
 }
 
 void iterative_interpreter::eval_call_llength() {
-    stack::push(Llength(reinterpret_cast<void*>(stack::pop())));
+    stack::push(Llength(reinterpret_cast<void *>(stack::pop())));
 }
 
 void iterative_interpreter::eval_call_lstring() {
-    void *str = Lstring(reinterpret_cast<void*>(stack::pop()));
+    void *str = Lstring(reinterpret_cast<void *>(stack::pop()));
     stack::push(reinterpret_cast<int32_t>(str));
 }
 
 void iterative_interpreter::eval_call_barray(int32_t n) {
+    //fprintf(stdout, "eval_call_barray n=%d\n", n);
     stack::reverse(n);
     auto result = reinterpret_cast<int32_t>(Barray_arr(box(n), stack::get_stack_top()));
     stack::drop(n);
@@ -341,15 +346,13 @@ void iterative_interpreter::eval_call_barray(int32_t n) {
 }
 
 void iterative_interpreter::eval() {
-# define INT    (ip += sizeof (int), *(int*)(ip - sizeof (int)))
-# define BYTE   *ip++
-# define STRING get_string (this->bf, INT)
-# define FAIL   failure ("ERROR: invalid opcode %d-%d\n", h, l)
     do {
         char x = BYTE,
                 h = (x & 0xF0) >> 4,
                 l = x & 0x0F;
-        //fprintf(stderr, "h = %d | l = %d\n", h, l);
+#ifdef DEBUG_PRINT
+        fprintf(stdout, "h = %d | l = %d\n", h, l);
+#endif
         int arg1, arg2;
         char *str;
         switch (h) {
@@ -368,7 +371,7 @@ void iterative_interpreter::eval() {
                         break;
 
                     case 1:
-                        eval_string(INT);
+                        eval_string(STRING);
                         break;
 
                     case 2:
