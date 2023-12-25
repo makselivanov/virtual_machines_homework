@@ -10,7 +10,7 @@ extern "C" {
 
 extern int32_t *__gc_stack_top, *__gc_stack_bottom;
 
-const int STACK_CAPACITY = sizeof(int32_t) * (2 << 20);
+const int STACK_CAPACITY = sizeof(int32_t) * (1 << 23);
 
 inline int32_t box(int32_t value) {
     return (value << 1) | 1;
@@ -60,7 +60,7 @@ namespace stack {
 
     inline void reverse(int32_t n) {
         if (size() < n) {
-            failure("STACK: reverse: stack is too small");
+            failure("STACK: reverse: stack is too small\n");
         }
         int32_t *top = __gc_stack_top;
         int32_t *bot = top + n - 1;
@@ -71,14 +71,14 @@ namespace stack {
 
     inline int32_t pop() {
         if (size() < 1) {
-            failure("STACK: pop - stack is empty");
+            failure("STACK: pop - stack is empty\n");
         }
         return *(__gc_stack_top++);
     }
 
     inline int32_t peek(int32_t index = 0) {
         if (size() < index) {
-            failure("STACK: peek - index is too large");
+            failure("STACK: peek - index is too large\n");
         }
 
         return __gc_stack_top[index];
@@ -86,7 +86,7 @@ namespace stack {
 
     inline void push(int32_t value) {
         if (empty_size() < 1) {
-            failure("STACK: push - not enough empty space");
+            failure("STACK: push - not enough empty space\n");
         }
 
         *(--__gc_stack_top) = value;
@@ -102,7 +102,7 @@ namespace stack {
 
     inline void drop(int32_t n) {
         if (size() < n) {
-            failure("STACK: drop: stack is too small");
+            failure("STACK: drop: stack is too small\n");
         }
 
         __gc_stack_top += n;
@@ -110,7 +110,7 @@ namespace stack {
 
     inline void reserve(int32_t n) {
         if (empty_size() < n) {
-            failure("STACK: reserve - not enough empty space");
+            failure("STACK: reserve - not enough empty space\n");
         }
         __gc_stack_top -= n;
     }

@@ -24,4 +24,15 @@ build:
 	mkdir build
 
 clean:
+	$(MAKE) clean -C regression
 	rm -r build
+
+regression-all: regression regression-expressions
+
+regression: all
+	$(MAKE) clean check -j8 -C regression
+	# $(MAKE) clean check -j8 -C stdlib/regression
+
+regression-expressions: all
+	$(MAKE) clean check -j8 -C regression/expressions
+	$(MAKE) clean check -j8 -C regression/deep-expressions
