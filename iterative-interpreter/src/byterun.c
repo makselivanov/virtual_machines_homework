@@ -9,7 +9,7 @@
 void *__start_custom_data;
 void *__stop_custom_data;
 
-/* The unpacked representation of bytecode file */
+/* The unpacked representation of bytecode bf */
 typedef struct {
     char *string_ptr;              /* A pointer to the beginning of the string table */
     int  *public_ptr;              /* A pointer to the beginning of publics table    */
@@ -36,7 +36,7 @@ int get_public_offset (bytefile *f, int i) {
     return f->public_ptr[i*2+1];
 }
 
-/* Reads a binary bytecode file by name and unpacks it */
+/* Reads a binary bytecode bf by name and unpacks it */
 bytefile* read_file (char *fname) {
     FILE *f = fopen (fname, "rb");
     long size;
@@ -278,7 +278,7 @@ void disassemble (FILE *f, bytefile *bf) {
     stop: fprintf (f, "<end>\n");
 }
 
-/* Dumps the contents of the file */
+/* Dumps the contents of the bf */
 void dump_file (FILE *f, bytefile *bf) {
     int i;
 

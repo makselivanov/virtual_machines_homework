@@ -20,20 +20,20 @@ extern size_t __gc_stack_top, __gc_stack_bottom;
   assert(__builtin_frame_address(0) <= (void *)__gc_stack_top);                                    \
   if (flag) { __gc_stack_top = 0; }
 
-static void vfailure (char *s, va_list args) {
+static void vfailure(char *s, va_list args) {
     fprintf(stderr, "*** FAILURE: ");
     vfprintf(stderr, s, args);   // vprintf (char *, va_list) <-> printf (char *, ...)
     exit(255);
 }
 
-void failure (char *s, ...) {
+void failure(char *s, ...) {
     va_list args;
 
     va_start(args, s);
     vfailure(s, args);
 }
 
-void Lassert (void *f, char *s, ...) {
+void Lassert(void *f, char *s, ...) {
     if (!UNBOX(f)) {
         va_list args;
 
@@ -56,22 +56,23 @@ void Lassert (void *f, char *s, ...) {
       failure("string value expected in %s\n", memo);                                              \
   while (0)
 
-extern void *Bsexp (int n, ...);
-extern int   LtagHash (char *);
+extern void *Bsexp(int n, ...);
+
+extern int LtagHash(char *);
 
 void *global_sysargs;
 void *global_stdout;
 void *global_stderr;
 
 // Gets a raw data_header
-extern int LkindOf (void *p) {
+extern int LkindOf(void *p) {
     if (UNBOXED(p)) return UNBOXED_TAG;
 
     return TAG(TO_DATA(p)->data_header);
 }
 
 // Compare s-exprs tags
-extern int LcompareTags (void *p, void *q) {
+extern int LcompareTags(void *p, void *q) {
     data *pd, *qd;
 
     ASSERT_BOXED("compareTags, 0", p);
@@ -90,7 +91,7 @@ extern int LcompareTags (void *p, void *q) {
 }
 
 // Functional synonym for built-in operator ":";
-void *Ls__Infix_58 (void *p, void *q) {
+void *Ls__Infix_58(void *p, void *q) {
     void *res;
 
     PRE_GC();
@@ -107,7 +108,7 @@ void *Ls__Infix_58 (void *p, void *q) {
 }
 
 // Functional synonym for built-in operator "!!";
-int Ls__Infix_3333 (void *p, void *q) {
+int Ls__Infix_3333(void *p, void *q) {
     ASSERT_UNBOXED("captured !!:1", p);
     ASSERT_UNBOXED("captured !!:2", q);
 
@@ -115,7 +116,7 @@ int Ls__Infix_3333 (void *p, void *q) {
 }
 
 // Functional synonym for built-in operator "&&";
-int Ls__Infix_3838 (void *p, void *q) {
+int Ls__Infix_3838(void *p, void *q) {
     ASSERT_UNBOXED("captured &&:1", p);
     ASSERT_UNBOXED("captured &&:2", q);
 
@@ -123,10 +124,10 @@ int Ls__Infix_3838 (void *p, void *q) {
 }
 
 // Functional synonym for built-in operator "==";
-int Ls__Infix_6161 (void *p, void *q) { return BOX(p == q); }
+int Ls__Infix_6161(void *p, void *q) { return BOX(p == q); }
 
 // Functional synonym for built-in operator "!=";
-int Ls__Infix_3361 (void *p, void *q) {
+int Ls__Infix_3361(void *p, void *q) {
     ASSERT_UNBOXED("captured !=:1", p);
     ASSERT_UNBOXED("captured !=:2", q);
 
@@ -134,7 +135,7 @@ int Ls__Infix_3361 (void *p, void *q) {
 }
 
 // Functional synonym for built-in operator "<=";
-int Ls__Infix_6061 (void *p, void *q) {
+int Ls__Infix_6061(void *p, void *q) {
     ASSERT_UNBOXED("captured <=:1", p);
     ASSERT_UNBOXED("captured <=:2", q);
 
@@ -142,7 +143,7 @@ int Ls__Infix_6061 (void *p, void *q) {
 }
 
 // Functional synonym for built-in operator "<";
-int Ls__Infix_60 (void *p, void *q) {
+int Ls__Infix_60(void *p, void *q) {
     ASSERT_UNBOXED("captured <:1", p);
     ASSERT_UNBOXED("captured <:2", q);
 
@@ -150,7 +151,7 @@ int Ls__Infix_60 (void *p, void *q) {
 }
 
 // Functional synonym for built-in operator ">=";
-int Ls__Infix_6261 (void *p, void *q) {
+int Ls__Infix_6261(void *p, void *q) {
     ASSERT_UNBOXED("captured >=:1", p);
     ASSERT_UNBOXED("captured >=:2", q);
 
@@ -158,7 +159,7 @@ int Ls__Infix_6261 (void *p, void *q) {
 }
 
 // Functional synonym for built-in operator ">";
-int Ls__Infix_62 (void *p, void *q) {
+int Ls__Infix_62(void *p, void *q) {
     ASSERT_UNBOXED("captured >:1", p);
     ASSERT_UNBOXED("captured >:2", q);
 
@@ -166,7 +167,7 @@ int Ls__Infix_62 (void *p, void *q) {
 }
 
 // Functional synonym for built-in operator "+";
-int Ls__Infix_43 (void *p, void *q) {
+int Ls__Infix_43(void *p, void *q) {
     ASSERT_UNBOXED("captured +:1", p);
     ASSERT_UNBOXED("captured +:2", q);
 
@@ -174,7 +175,7 @@ int Ls__Infix_43 (void *p, void *q) {
 }
 
 // Functional synonym for built-in operator "-";
-int Ls__Infix_45 (void *p, void *q) {
+int Ls__Infix_45(void *p, void *q) {
     if (UNBOXED(p)) {
         ASSERT_UNBOXED("captured -:2", q);
         return BOX(UNBOX(p) - UNBOX(q));
@@ -185,7 +186,7 @@ int Ls__Infix_45 (void *p, void *q) {
 }
 
 // Functional synonym for built-in operator "*";
-int Ls__Infix_42 (void *p, void *q) {
+int Ls__Infix_42(void *p, void *q) {
     ASSERT_UNBOXED("captured *:1", p);
     ASSERT_UNBOXED("captured *:2", q);
 
@@ -193,7 +194,7 @@ int Ls__Infix_42 (void *p, void *q) {
 }
 
 // Functional synonym for built-in operator "/";
-int Ls__Infix_47 (void *p, void *q) {
+int Ls__Infix_47(void *p, void *q) {
     ASSERT_UNBOXED("captured /:1", p);
     ASSERT_UNBOXED("captured /:2", q);
 
@@ -201,34 +202,33 @@ int Ls__Infix_47 (void *p, void *q) {
 }
 
 // Functional synonym for built-in operator "%";
-int Ls__Infix_37 (void *p, void *q) {
+int Ls__Infix_37(void *p, void *q) {
     ASSERT_UNBOXED("captured %:1", p);
     ASSERT_UNBOXED("captured %:2", q);
 
     return BOX(UNBOX(p) % UNBOX(q));
 }
 
-extern int Llength (void *p) {
+extern int Llength(void *p) {
     ASSERT_BOXED(".length", p);
     return BOX(LEN(TO_DATA(p)->data_header));
 }
 
 static char *chars = "_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'";
 
-extern char *de_hash (int);
+extern char *de_hash(int);
 
-extern int LtagHash (char *s) {
+extern int LtagHash(char *s) {
     char *p;
-    int   h = 0, limit = 0;
+    int h = 0, limit = 0;
 
     p = s;
 
     while (*p && limit++ <= 4) {
-        char *q   = chars;
-        int   pos = 0;
+        char *q = chars;
+        int pos = 0;
 
-        for (; *q && *q != *p; q++, pos++)
-            ;
+        for (; *q && *q != *p; q++, pos++);
 
         if (*q) h = (h << 6) | pos;
         else failure("tagHash: character not found: %c\n", *p);
@@ -241,16 +241,16 @@ extern int LtagHash (char *s) {
     return BOX(h);
 }
 
-char *de_hash (int n) {
+char *de_hash(int n) {
     static char buf[6] = {0, 0, 0, 0, 0, 0};
-    char       *p      = (char *)BOX(NULL);
-    p                  = &buf[5];
+    char *p = (char *) BOX(NULL);
+    p = &buf[5];
 
     *p-- = 0;
 
     while (n != 0) {
         *p-- = chars[n & 0x003F];
-        n    = n >> 6;
+        n = n >> 6;
     }
 
     return ++p;
@@ -258,39 +258,39 @@ char *de_hash (int n) {
 
 typedef struct {
     char *contents;
-    int   ptr;
-    int   len;
+    int ptr;
+    int len;
 } StringBuf;
 
 static StringBuf stringBuf;
 
 #define STRINGBUF_INIT 128
 
-static void createStringBuf () {
-    stringBuf.contents = (char *)malloc(STRINGBUF_INIT);
+static void createStringBuf() {
+    stringBuf.contents = (char *) malloc(STRINGBUF_INIT);
     memset(stringBuf.contents, 0, STRINGBUF_INIT);
     stringBuf.ptr = 0;
     stringBuf.len = STRINGBUF_INIT;
 }
 
-static void deleteStringBuf () { free(stringBuf.contents); }
+static void deleteStringBuf() { free(stringBuf.contents); }
 
-static void extendStringBuf () {
+static void extendStringBuf() {
     int len = stringBuf.len << 1;
 
-    stringBuf.contents = (char *)realloc(stringBuf.contents, len);
-    stringBuf.len      = len;
+    stringBuf.contents = (char *) realloc(stringBuf.contents, len);
+    stringBuf.len = len;
 }
 
-static void vprintStringBuf (char *fmt, va_list args) {
-    int     written = 0, rest = 0;
-    char   *buf = (char *)BOX(NULL);
+static void vprintStringBuf(char *fmt, va_list args) {
+    int written = 0, rest = 0;
+    char *buf = (char *) BOX(NULL);
     va_list vsnargs;
 
     again:
     va_copy(vsnargs, args);
 
-    buf  = &stringBuf.contents[stringBuf.ptr];
+    buf = &stringBuf.contents[stringBuf.ptr];
     rest = stringBuf.len - stringBuf.ptr;
 
     written = vsnprintf(buf, rest, fmt, vsnargs);
@@ -305,16 +305,16 @@ static void vprintStringBuf (char *fmt, va_list args) {
     stringBuf.ptr += written;
 }
 
-static void printStringBuf (char *fmt, ...) {
+static void printStringBuf(char *fmt, ...) {
     va_list args;
 
     va_start(args, fmt);
     vprintStringBuf(fmt, args);
 }
 
-static void printValue (void *p) {
-    data *a = (data *)BOX(NULL);
-    int   i = BOX(0);
+static void printValue(void *p) {
+    data *a = (data *) BOX(NULL);
+    int i = BOX(0);
     if (UNBOXED(p)) {
         printStringBuf("%d", UNBOX(p));
     } else {
@@ -326,14 +326,16 @@ static void printValue (void *p) {
         a = TO_DATA(p);
 
         switch (TAG(a->data_header)) {
-            case STRING_TAG: printStringBuf("\"%s\"", a->contents); break;
+            case STRING_TAG:
+                printStringBuf("\"%s\"", a->contents);
+                break;
 
             case CLOSURE_TAG: {
 
                 printStringBuf("<closure ");
                 for (i = 0; i < LEN(a->data_header); i++) {
-                    if (i) printValue((void *)((int *)a->contents)[i]);
-                    else printStringBuf("0x%x", (void *)((int *)a->contents)[i]);
+                    if (i) printValue((void *) ((int *) a->contents)[i]);
+                    else printStringBuf("0x%x", (void *) ((int *) a->contents)[i]);
                     if (i != LEN(a->data_header) - 1) printStringBuf(", ");
                 }
                 printStringBuf(">");
@@ -342,7 +344,7 @@ static void printValue (void *p) {
             case ARRAY_TAG: {
                 printStringBuf("[");
                 for (i = 0; i < LEN(a->data_header); i++) {
-                    printValue((void *)((int *)a->contents)[i]);
+                    printValue((void *) ((int *) a->contents)[i]);
                     if (i != LEN(a->data_header) - 1) printStringBuf(", ");
                 }
                 printStringBuf("]");
@@ -350,14 +352,14 @@ static void printValue (void *p) {
             }
 
             case SEXP_TAG: {
-                sexp *sa  = (sexp *)a;
+                sexp *sa = (sexp *) a;
                 char *tag = de_hash(sa->tag);
                 if (strcmp(tag, "cons") == 0) {
                     sexp *sb = sa;
                     printStringBuf("{");
                     while (LEN(sb->data_header)) {
-                        printValue((void *)((int *)sb->contents)[0]);
-                        int list_next = ((int *)sb->contents)[1];
+                        printValue((void *) ((int *) sb->contents)[0]);
+                        int list_next = ((int *) sb->contents)[1];
                         if (!UNBOXED(list_next)) {
                             printStringBuf(", ");
                             sb = TO_SEXP(list_next);
@@ -366,69 +368,74 @@ static void printValue (void *p) {
                     printStringBuf("}");
                 } else {
                     printStringBuf("%s", tag);
-                    sexp *sexp_a = (sexp *)a;
+                    sexp *sexp_a = (sexp *) a;
                     if (LEN(a->data_header)) {
                         printStringBuf(" (");
                         for (i = 0; i < LEN(sexp_a->data_header); i++) {
-                            printValue((void *)((int *)sexp_a->contents)[i]);
+                            printValue((void *) ((int *) sexp_a->contents)[i]);
                             if (i != LEN(sexp_a->data_header) - 1) printStringBuf(", ");
                         }
                         printStringBuf(")");
                     }
                 }
-            } break;
+            }
+                break;
 
-            default: printStringBuf("*** invalid data_header: 0x%x ***", TAG(a->data_header));
+            default:
+                printStringBuf("*** invalid data_header: 0x%x ***", TAG(a->data_header));
         }
     }
 }
 
-static void stringcat (void *p) {
+static void stringcat(void *p) {
     data *a;
-    int   i;
+    int i;
 
-    if (UNBOXED(p))
-        ;
+    if (UNBOXED(p));
     else {
         a = TO_DATA(p);
 
         switch (TAG(a->data_header)) {
-            case STRING_TAG: printStringBuf("%s", a->contents); break;
+            case STRING_TAG:
+                printStringBuf("%s", a->contents);
+                break;
 
             case SEXP_TAG: {
                 char *tag = de_hash(TO_SEXP(p)->tag);
 
                 if (strcmp(tag, "cons") == 0) {
-                    sexp *b = (sexp *)a;
+                    sexp *b = (sexp *) a;
 
                     while (LEN(b->data_header)) {
-                        stringcat((void *)((int *)b->contents)[0]);
-                        int next_b = ((int *)b->contents)[1];
+                        stringcat((void *) ((int *) b->contents)[0]);
+                        int next_b = ((int *) b->contents)[1];
                         if (!UNBOXED(next_b)) {
                             b = TO_SEXP(next_b);
                         } else break;
                     }
                 } else printStringBuf("*** non-list data_header: %s ***", tag);
-            } break;
+            }
+                break;
 
-            default: printStringBuf("*** invalid data_header: 0x%x ***", TAG(a->data_header));
+            default:
+                printStringBuf("*** invalid data_header: 0x%x ***", TAG(a->data_header));
         }
     }
 }
 
-extern int Luppercase (void *v) {
+extern int Luppercase(void *v) {
     ASSERT_UNBOXED("Luppercase:1", v);
-    return BOX(toupper((int)UNBOX(v)));
+    return BOX(toupper((int) UNBOX(v)));
 }
 
-extern int Llowercase (void *v) {
+extern int Llowercase(void *v) {
     ASSERT_UNBOXED("Llowercase:1", v);
-    return BOX(tolower((int)UNBOX(v)));
+    return BOX(tolower((int) UNBOX(v)));
 }
 
-extern int LmatchSubString (char *subj, char *patt, int pos) {
+extern int LmatchSubString(char *subj, char *patt, int pos) {
     data *p = TO_DATA(patt), *s = TO_DATA(subj);
-    int   n;
+    int n;
 
     ASSERT_STRING("matchSubString:1", subj);
     ASSERT_STRING("matchSubString:2", patt);
@@ -441,9 +448,9 @@ extern int LmatchSubString (char *subj, char *patt, int pos) {
     return BOX(strncmp(subj + UNBOX(pos), patt, n) == 0);
 }
 
-extern void *Lsubstring (void *subj, int p, int l) {
-    data *d  = TO_DATA(subj);
-    int   pp = UNBOX(p), ll = UNBOX(l);
+extern void *Lsubstring(void *subj, int p, int l) {
+    data *d = TO_DATA(subj);
+    int pp = UNBOX(p), ll = UNBOX(l);
 
     ASSERT_STRING("substring:1", subj);
     ASSERT_UNBOXED("substring:2", p);
@@ -455,10 +462,10 @@ extern void *Lsubstring (void *subj, int p, int l) {
         PRE_GC();
 
         push_extra_root(&subj);
-        r = (data *)alloc_string(ll);
+        r = (data *) alloc_string(ll);
         pop_extra_root(&subj);
 
-        strncpy(r->contents, (char *)subj + pp, ll);
+        strncpy(r->contents, (char *) subj + pp, ll);
 
         POST_GC();
 
@@ -472,21 +479,21 @@ extern void *Lsubstring (void *subj, int p, int l) {
             LEN(d->data_header));
 }
 
-extern struct re_pattern_buffer *Lregexp (char *regexp) {
-    regex_t *b = (regex_t *)malloc(sizeof(regex_t));
+extern struct re_pattern_buffer *Lregexp(char *regexp) {
+    regex_t *b = (regex_t *) malloc(sizeof(regex_t));
 
     /* printf ("regexp: %s,\t%x\n", regexp, b); */
 
     memset(b, 0, sizeof(regex_t));
 
-    int n = (int)re_compile_pattern(regexp, strlen(regexp), b);
+    int n = (int) re_compile_pattern(regexp, strlen(regexp), b);
 
     if (n != 0) { failure("%", strerror(n)); };
 
     return b;
 }
 
-extern int LregexpMatch (struct re_pattern_buffer *b, char *s, int pos) {
+extern int LregexpMatch(struct re_pattern_buffer *b, char *s, int pos) {
     int res;
 
     ASSERT_BOXED("regexpMatch:1", b);
@@ -502,42 +509,45 @@ extern int LregexpMatch (struct re_pattern_buffer *b, char *s, int pos) {
     return BOX(res);
 }
 
-extern void *Bstring (void *);
+extern void *Bstring(void *);
 
-void *Lclone (void *p) {
+void *Lclone(void *p) {
     data *obj;
     sexp *sobj;
     void *res;
-    int   n;
+    int n;
     if (UNBOXED(p)) return p;
 
     PRE_GC();
 
     data *a = TO_DATA(p);
-    int   t = TAG(a->data_header), l = LEN(a->data_header);
+    int t = TAG(a->data_header), l = LEN(a->data_header);
 
     push_extra_root(&p);
     switch (t) {
-        case STRING_TAG: res = Bstring(TO_DATA(p)->contents); break;
+        case STRING_TAG:
+            res = Bstring(TO_DATA(p)->contents);
+            break;
 
         case ARRAY_TAG:
-            obj = (data *)alloc_array(l);
+            obj = (data *) alloc_array(l);
             memcpy(obj, TO_DATA(p), array_size(l));
-            res = (void *)obj->contents;
+            res = (void *) obj->contents;
             break;
         case CLOSURE_TAG:
-            obj = (data *)alloc_closure(l);
+            obj = (data *) alloc_closure(l);
             memcpy(obj, TO_DATA(p), closure_size(l));
-            res = (void *)(obj->contents);
+            res = (void *) (obj->contents);
             break;
 
         case SEXP_TAG:
-            obj = (data *)alloc_sexp(l);
+            obj = (data *) alloc_sexp(l);
             memcpy(obj, TO_DATA(p), sexp_size(l));
-            res = (void *)obj->contents;
+            res = (void *) obj->contents;
             break;
 
-        default: failure("invalid data_header %d in clone *****\n", t);
+        default:
+            failure("invalid data_header %d in clone *****\n", t);
     }
     pop_extra_root(&p);
 
@@ -549,13 +559,13 @@ void *Lclone (void *p) {
 #define HASH_APPEND(acc, x)                                                                        \
   (((acc + (unsigned)x) << (WORD_SIZE / 2)) | ((acc + (unsigned)x) >> (WORD_SIZE / 2)))
 
-int inner_hash (int depth, unsigned acc, void *p) {
+int inner_hash(int depth, unsigned acc, void *p) {
     if (depth > HASH_DEPTH) return acc;
 
     if (UNBOXED(p)) return HASH_APPEND(acc, UNBOX(p));
     else if (is_valid_heap_pointer(p)) {
         data *a = TO_DATA(p);
-        int   t = TAG(a->data_header), l = LEN(a->data_header), i;
+        int t = TAG(a->data_header), l = LEN(a->data_header), i;
 
         acc = HASH_APPEND(acc, t);
         acc = HASH_APPEND(acc, l);
@@ -565,56 +575,60 @@ int inner_hash (int depth, unsigned acc, void *p) {
                 char *p = a->contents;
 
                 while (*p) {
-                    int n = (int)*p++;
-                    acc   = HASH_APPEND(acc, n);
+                    int n = (int) *p++;
+                    acc = HASH_APPEND(acc, n);
                 }
 
                 return acc;
             }
 
             case CLOSURE_TAG:
-                acc = HASH_APPEND(acc, ((void **)a->contents)[0]);
-                i   = 1;
+                acc = HASH_APPEND(acc, ((void **) a->contents)[0]);
+                i = 1;
                 break;
 
-            case ARRAY_TAG: i = 0; break;
+            case ARRAY_TAG:
+                i = 0;
+                break;
 
             case SEXP_TAG: {
                 int ta = TO_SEXP(p)->tag;
-                acc    = HASH_APPEND(acc, ta);
-                i      = 1;
+                acc = HASH_APPEND(acc, ta);
+                i = 1;
                 ++l;
                 break;
             }
 
-            default: failure("invalid data_header %d in hash *****\n", t);
+            default:
+                failure("invalid data_header %d in hash *****\n", t);
         }
 
-        for (; i < l; i++) acc = inner_hash(depth + 1, acc, ((void **)a->contents)[i]);
+        for (; i < l; i++) acc = inner_hash(depth + 1, acc, ((void **) a->contents)[i]);
 
         return acc;
     } else return HASH_APPEND(acc, p);
 }
 
-extern void *LstringInt (char *b) {
+extern void *LstringInt(char *b) {
     int n;
     sscanf(b, "%d", &n);
-    return (void *)BOX(n);
+    return (void *) BOX(n);
 }
 
-extern int Lhash (void *p) { return BOX(0x3fffff & inner_hash(0, 0, p)); }
+extern int Lhash(void *p) { return BOX(0x3fffff & inner_hash(0, 0, p)); }
 
-extern int LflatCompare (void *p, void *q) {
+extern int LflatCompare(void *p, void *q) {
     if (UNBOXED(p)) {
         if (UNBOXED(q)) { return BOX(UNBOX(p) - UNBOX(q)); }
 
         return -1;
     } else if (~UNBOXED(q)) {
         return BOX(p - q);
-    } else BOX(1);
+    } else
+        BOX(1);
 }
 
-extern int Lcompare (void *p, void *q) {
+extern int Lcompare(void *p, void *q) {
 #define COMPARE_AND_RETURN(x, y)                                                                   \
   do                                                                                               \
     if (x != y) return BOX(x - y);                                                                 \
@@ -630,18 +644,19 @@ extern int Lcompare (void *p, void *q) {
         if (is_valid_heap_pointer(p)) {
             if (is_valid_heap_pointer(q)) {
                 data *a = TO_DATA(p), *b = TO_DATA(q);
-                int   ta = TAG(a->data_header), tb = TAG(b->data_header);
-                int   la = LEN(a->data_header), lb = LEN(b->data_header);
-                int   i;
-                int   shift = 0;
+                int ta = TAG(a->data_header), tb = TAG(b->data_header);
+                int la = LEN(a->data_header), lb = LEN(b->data_header);
+                int i;
+                int shift = 0;
 
                 COMPARE_AND_RETURN(ta, tb);
 
                 switch (ta) {
-                    case STRING_TAG: return BOX(strcmp(a->contents, b->contents));
+                    case STRING_TAG:
+                        return BOX(strcmp(a->contents, b->contents));
 
                     case CLOSURE_TAG:
-                        COMPARE_AND_RETURN(((void **)a->contents)[0], ((void **)b->contents)[0]);
+                        COMPARE_AND_RETURN(((void **) a->contents)[0], ((void **) b->contents)[0]);
                         COMPARE_AND_RETURN(la, lb);
                         i = 1;
                         break;
@@ -655,16 +670,17 @@ extern int Lcompare (void *p, void *q) {
                         int tag_a = TO_SEXP(p)->tag, tag_b = TO_SEXP(q)->tag;
                         COMPARE_AND_RETURN(tag_a, tag_b);
                         COMPARE_AND_RETURN(la, lb);
-                        i     = 0;
+                        i = 0;
                         shift = 1;
                         break;
                     }
 
-                    default: failure("invalid data_header %d in compare *****\n", ta);
+                    default:
+                        failure("invalid data_header %d in compare *****\n", ta);
                 }
 
                 for (; i < la; i++) {
-                    int c = Lcompare(((void **)a->contents)[i + shift], ((void **)b->contents)[i + shift]);
+                    int c = Lcompare(((void **) a->contents)[i + shift], ((void **) b->contents)[i + shift]);
                     if (c != BOX(0)) return c;
                 }
                 return BOX(0);
@@ -674,8 +690,8 @@ extern int Lcompare (void *p, void *q) {
     }
 }
 
-extern void *Belem (void *p, int i) {
-    data *a = (data *)BOX(NULL);
+extern void *Belem(void *p, int i) {
+    data *a = (data *) BOX(NULL);
 
     if (UNBOXED(p)) { ASSERT_BOXED(".elem:1", p); }
     ASSERT_UNBOXED(".elem:2", i);
@@ -684,24 +700,27 @@ extern void *Belem (void *p, int i) {
     i = UNBOX(i);
 
     switch (TAG(a->data_header)) {
-        case STRING_TAG: return (void *)BOX(a->contents[i]);
-        case SEXP_TAG: return (void *)((int *)a->contents)[i + 1];
-        default: return (void *)((int *)a->contents)[i];
+        case STRING_TAG:
+            return (void *) BOX(a->contents[i]);
+        case SEXP_TAG:
+            return (void *) ((int *) a->contents)[i + 1];
+        default:
+            return (void *) ((int *) a->contents)[i];
     }
 }
 
-extern void *LmakeArray (int length) {
+extern void *LmakeArray(int length) {
     data *r;
-    int   n, *p;
+    int n, *p;
 
     ASSERT_UNBOXED("makeArray:1", length);
 
     PRE_GC();
 
     n = UNBOX(length);
-    r = (data *)alloc_array(n);
+    r = (data *) alloc_array(n);
 
-    p = (int *)r->contents;
+    p = (int *) r->contents;
     while (n--) *p++ = BOX(0);
 
     POST_GC();
@@ -709,23 +728,23 @@ extern void *LmakeArray (int length) {
     return r->contents;
 }
 
-extern void *LmakeString (int length) {
-    int   n = UNBOX(length);
+extern void *LmakeString(int length) {
+    int n = UNBOX(length);
     data *r;
 
     ASSERT_UNBOXED("makeString", length);
 
     PRE_GC();
 
-    r = (data *)alloc_string(n);   // '\0' in the end of the string is taken into account
+    r = (data *) alloc_string(n);   // '\0' in the end of the string is taken into account
 
     POST_GC();
 
     return r->contents;
 }
 
-extern void *Bstring (void *p) {
-    int   n = strlen(p);
+extern void *Bstring(void *p) {
+    int n = strlen(p);
     void *s = NULL;
 
     PRE_GC();
@@ -733,14 +752,14 @@ extern void *Bstring (void *p) {
     push_extra_root(&p);
     s = LmakeString(BOX(n));
     pop_extra_root(&p);
-    strncpy((char *)&TO_DATA(s)->contents, p, n + 1);   // +1 because of '\0' in the end of C-strings
+    strncpy((char *) &TO_DATA(s)->contents, p, n + 1);   // +1 because of '\0' in the end of C-strings
 
     POST_GC();
 
     return s;
 }
 
-extern void *Lstringcat (void *p) {
+extern void *Lstringcat(void *p) {
     void *s;
 
     /* ASSERT_BOXED("stringcat", p); */
@@ -761,8 +780,8 @@ extern void *Lstringcat (void *p) {
     return s;
 }
 
-extern void *Lstring (void *p) {
-    void *s = (void *)BOX(NULL);
+extern void *Lstring(void *p) {
+    void *s = (void *) BOX(NULL);
 
     PRE_GC();
 
@@ -780,55 +799,104 @@ extern void *Lstring (void *p) {
     return s;
 }
 
-extern void *Bclosure (int bn, void *entry, ...) {
-    va_list       args;
-    int           i, ai;
+extern void *Bclosure_arr(int bn, void *entry, int *values) {
+    int i, ai;
+    register int *ebp asm ("ebp");
+    size_t *argss;
+    data *r;
+    int n = UNBOX(bn);
+
+    PRE_GC();
+    argss = (ebp + 12);
+    for (i = 0; i < n; i++, argss++) {
+        push_extra_root((void **) argss);
+    }
+
+    r = (data *) alloc_closure(n + 1);
+    push_extra_root((void **) &r);
+    ((void **) r->contents)[0] = entry;
+
+    for (i = 0; i < n; i++) {
+        ai = values[i];
+        ((int *) r->contents)[i + 1] = ai;
+    }
+
+    POST_GC();
+
+    argss--;
+    for (i = 0; i < n; i++, argss--) {
+        pop_extra_root((void **) argss);
+    }
+
+    return r->contents;
+}
+
+extern void *Bclosure(int bn, void *entry, ...) {
+    va_list args;
+    int i, ai;
     register int *ebp asm("ebp");
-    size_t       *argss;
-    data         *r;
-    int           n = UNBOX(bn);
+    size_t *argss;
+    data *r;
+    int n = UNBOX(bn);
 
     PRE_GC();
 
     argss = (ebp + 12);
-    for (i = 0; i < n; i++, argss++) { push_extra_root((void **)argss); }
+    for (i = 0; i < n; i++, argss++) { push_extra_root((void **) argss); }
 
-    r = (data *)alloc_closure(n + 1);
-    push_extra_root((void **)&r);
-    ((void **)r->contents)[0] = entry;
+    r = (data *) alloc_closure(n + 1);
+    push_extra_root((void **) &r);
+    ((void **) r->contents)[0] = entry;
 
     va_start(args, entry);
 
     for (i = 0; i < n; i++) {
-        ai                          = va_arg(args, int);
-        ((int *)r->contents)[i + 1] = ai;
+        ai = va_arg(args, int);
+        ((int *) r->contents)[i + 1] = ai;
     }
 
     va_end(args);
 
     POST_GC();
 
-    pop_extra_root((void **)&r);
+    pop_extra_root((void **) &r);
     argss--;
-    for (i = 0; i < n; i++, argss--) { pop_extra_root((void **)argss); }
+    for (i = 0; i < n; i++, argss--) { pop_extra_root((void **) argss); }
     return r->contents;
 }
 
-extern void *Barray (int bn, ...) {
+extern void *Barray_arr(int bn, int *values) {
+    int i, ai;
+    data *r;
+    int n = UNBOX(bn);
+
+    PRE_GC();
+    r = (data *) alloc_array(n);
+
+    for (i = 0; i < n; i++) {
+        ai = *(values++);
+        ((int *) r->contents)[i] = ai;
+    }
+
+    POST_GC();
+    return r->contents;
+}
+
+extern void *Barray(int bn, ...) {
     va_list args;
-    int     i, ai;
-    data   *r;
-    int     n = UNBOX(bn);
+    int i, ai;
+    data *r;
+    int n = UNBOX(bn);
 
     PRE_GC();
 
-    r = (data *)alloc_array(n);
+    r = (data *) alloc_array(n);
 
     va_start(args, bn);
 
     for (i = 0; i < n; i++) {
-        ai                      = va_arg(args, int);
-        ((int *)r->contents)[i] = ai;
+        ai = va_arg(args, int);
+        ((int *) r->contents)[i] = ai;
     }
 
     va_end(args);
@@ -841,37 +909,63 @@ extern void *Barray (int bn, ...) {
 extern memory_chunk heap;
 #endif
 
-extern void *Bsexp (int bn, ...) {
-    va_list args;
-    int     i;
-    int     ai;
+extern void *Bsexp_arr(int bn, int tag, int *values) {
+    int i;
+    int ai;
     size_t *p;
-    data   *r;
-    int     n = UNBOX(bn);
+    sexp *r;
+    data *d;
+    int n = UNBOX(bn);
+
+    PRE_GC();
+    int fields_cnt = n - 1;
+    r = (data *) alloc_sexp(fields_cnt);
+    ((sexp *) r)->tag = 0;
+
+    for (i = 0; i < n - 1; i++) {
+        ai = *(values++);
+
+        p = (size_t *) ai;
+        ((int *) d->contents)[i] = ai;
+    }
+
+    ((sexp *) r)->tag = UNBOX(tag);
+    POST_GC();
+
+    return d->contents;
+}
+
+extern void *Bsexp(int bn, ...) {
+    va_list args;
+    int i;
+    int ai;
+    size_t *p;
+    data *r;
+    int n = UNBOX(bn);
 
     PRE_GC();
 
-    int fields_cnt   = n - 1;
-    r                = (data *)alloc_sexp(fields_cnt);
-    ((sexp *)r)->tag = 0;
+    int fields_cnt = n - 1;
+    r = (data *) alloc_sexp(fields_cnt);
+    ((sexp *) r)->tag = 0;
 
     va_start(args, bn);
 
     for (i = 1; i < n; i++) {
-        ai                      = va_arg(args, int);
-        p                       = (size_t *)ai;
-        ((int *)r->contents)[i] = ai;
+        ai = va_arg(args, int);
+        p = (size_t *) ai;
+        ((int *) r->contents)[i] = ai;
     }
 
-    ((sexp *)r)->tag = UNBOX(va_arg(args, int));
+    ((sexp *) r)->tag = UNBOX(va_arg(args, int));
 
     va_end(args);
 
     POST_GC();
-    return (int *)r->contents;
+    return (int *) r->contents;
 }
 
-extern int Btag (void *d, int t, int n) {
+extern int Btag(void *d, int t, int n) {
     data *r;
 
     if (UNBOXED(d)) return BOX(0);
@@ -882,11 +976,11 @@ extern int Btag (void *d, int t, int n) {
     }
 }
 
-int get_tag (data *d) { return TAG(d->data_header); }
+int get_tag(data *d) { return TAG(d->data_header); }
 
-int get_len (data *d) { return LEN(d->data_header); }
+int get_len(data *d) { return LEN(d->data_header); }
 
-extern int Barray_patt (void *d, int n) {
+extern int Barray_patt(void *d, int n) {
     data *r;
 
     if (UNBOXED(d)) return BOX(0);
@@ -896,8 +990,8 @@ extern int Barray_patt (void *d, int n) {
     }
 }
 
-extern int Bstring_patt (void *x, void *y) {
-    data *rx = (data *)BOX(NULL), *ry = (data *)BOX(NULL);
+extern int Bstring_patt(void *x, void *y) {
+    data *rx = (data *) BOX(NULL), *ry = (data *) BOX(NULL);
 
     ASSERT_STRING(".string_patt:2", y);
 
@@ -912,62 +1006,62 @@ extern int Bstring_patt (void *x, void *y) {
     }
 }
 
-extern int Bclosure_tag_patt (void *x) {
+extern int Bclosure_tag_patt(void *x) {
     if (UNBOXED(x)) return BOX(0);
 
     return BOX(TAG(TO_DATA(x)->data_header) == CLOSURE_TAG);
 }
 
-extern int Bboxed_patt (void *x) { return BOX(UNBOXED(x) ? 0 : 1); }
+extern int Bboxed_patt(void *x) { return BOX(UNBOXED(x) ? 0 : 1); }
 
-extern int Bunboxed_patt (void *x) { return BOX(UNBOXED(x) ? 1 : 0); }
+extern int Bunboxed_patt(void *x) { return BOX(UNBOXED(x) ? 1 : 0); }
 
-extern int Barray_tag_patt (void *x) {
+extern int Barray_tag_patt(void *x) {
     if (UNBOXED(x)) return BOX(0);
 
     return BOX(TAG(TO_DATA(x)->data_header) == ARRAY_TAG);
 }
 
-extern int Bstring_tag_patt (void *x) {
+extern int Bstring_tag_patt(void *x) {
     if (UNBOXED(x)) return BOX(0);
 
     return BOX(TAG(TO_DATA(x)->data_header) == STRING_TAG);
 }
 
-extern int Bsexp_tag_patt (void *x) {
+extern int Bsexp_tag_patt(void *x) {
     if (UNBOXED(x)) return BOX(0);
 
     return BOX(TAG(TO_DATA(x)->data_header) == SEXP_TAG);
 }
 
-extern void *Bsta (void *v, int i, void *x) {
+extern void *Bsta(void *v, int i, void *x) {
     if (UNBOXED(i)) {
         ASSERT_BOXED(".sta:3", x);
         data *d = TO_DATA(x);
 
         switch (TAG(d->data_header)) {
             case STRING_TAG: {
-                ((char *)x)[UNBOX(i)] = (char)UNBOX(v);
+                ((char *) x)[UNBOX(i)] = (char) UNBOX(v);
                 break;
             }
             case SEXP_TAG: {
-                ((int *)x)[UNBOX(i) + 1] = (int)v;
+                ((int *) x)[UNBOX(i) + 1] = (int) v;
                 break;
             }
             default: {
-                ((int *)x)[UNBOX(i)] = (int)v;
+                ((int *) x)[UNBOX(i)] = (int) v;
             }
         }
     } else {
-        *(void **)x = v;
+        *(void **) x = v;
     }
 
     return v;
 }
 
-static void fix_unboxed (char *s, va_list va) {
-    size_t *p = (size_t *)va;
-    int     i = 0;
+static void fix_unboxed(char *s, va_list va) {
+    size_t *p = (size_t *) va;
+    int i = 0;
 
     while (*s) {
         if (*s == '%') {
@@ -979,7 +1073,7 @@ static void fix_unboxed (char *s, va_list va) {
     }
 }
 
-extern void Lfailure (char *s, ...) {
+extern void Lfailure(char *s, ...) {
     va_list args;
 
     va_start(args, s);
@@ -987,7 +1081,7 @@ extern void Lfailure (char *s, ...) {
     vfailure(s, args);
 }
 
-extern void Bmatch_failure (void *v, char *fname, int line, int col) {
+extern void Bmatch_failure(void *v, char *fname, int line, int col) {
     createStringBuf();
     printValue(v);
     failure("match failure at %s:%d:%d, value '%s'\n",
@@ -997,10 +1091,10 @@ extern void Bmatch_failure (void *v, char *fname, int line, int col) {
             stringBuf.contents);
 }
 
-extern void * /*Lstrcat*/ Li__Infix_4343 (void *a, void *b) {
-    data *da = (data *)BOX(NULL);
-    data *db = (data *)BOX(NULL);
-    data *d  = (data *)BOX(NULL);
+extern void * /*Lstrcat*/ Li__Infix_4343(void *a, void *b) {
+    data *da = (data *) BOX(NULL);
+    data *db = (data *) BOX(NULL);
+    data *d = (data *) BOX(NULL);
 
     ASSERT_STRING("++:1", a);
     ASSERT_STRING("++:2", b);
@@ -1028,9 +1122,9 @@ extern void * /*Lstrcat*/ Li__Infix_4343 (void *a, void *b) {
     return d->contents;
 }
 
-extern void *Lsprintf (char *fmt, ...) {
+extern void *Lsprintf(char *fmt, ...) {
     va_list args;
-    void   *s;
+    void *s;
 
     ASSERT_STRING("sprintf:1", fmt);
 
@@ -1043,9 +1137,9 @@ extern void *Lsprintf (char *fmt, ...) {
 
     PRE_GC();
 
-    push_extra_root((void **)&fmt);
+    push_extra_root((void **) &fmt);
     s = Bstring(stringBuf.contents);
-    pop_extra_root((void **)&fmt);
+    pop_extra_root((void **) &fmt);
 
     POST_GC();
 
@@ -1054,11 +1148,11 @@ extern void *Lsprintf (char *fmt, ...) {
     return s;
 }
 
-extern void *LgetEnv (char *var) {
+extern void *LgetEnv(char *var) {
     char *e = getenv(var);
     void *s;
 
-    if (e == NULL) return (void *)BOX(0);
+    if (e == NULL) return (void *) BOX(0);
 
     PRE_GC();
 
@@ -1069,10 +1163,10 @@ extern void *LgetEnv (char *var) {
     return s;
 }
 
-extern int Lsystem (char *cmd) { return BOX(system(cmd)); }
+extern int Lsystem(char *cmd) { return BOX(system(cmd)); }
 
-extern void Lfprintf (FILE *f, char *s, ...) {
-    va_list args = (va_list)BOX(NULL);
+extern void Lfprintf(FILE *f, char *s, ...) {
+    va_list args = (va_list) BOX(NULL);
 
     ASSERT_BOXED("fprintf:1", f);
     ASSERT_STRING("fprintf:2", s);
@@ -1083,8 +1177,8 @@ extern void Lfprintf (FILE *f, char *s, ...) {
     if (vfprintf(f, s, args) < 0) { failure("fprintf (...): %s\n", strerror(errno)); }
 }
 
-extern void Lprintf (char *s, ...) {
-    va_list args = (va_list)BOX(NULL);
+extern void Lprintf(char *s, ...) {
+    va_list args = (va_list) BOX(NULL);
 
     ASSERT_STRING("printf:1", s);
 
@@ -1096,7 +1190,7 @@ extern void Lprintf (char *s, ...) {
     fflush(stdout);
 }
 
-extern FILE *Lfopen (char *f, char *m) {
+extern FILE *Lfopen(char *f, char *m) {
     FILE *h;
 
     ASSERT_STRING("fopen:1", f);
@@ -1109,13 +1203,13 @@ extern FILE *Lfopen (char *f, char *m) {
     failure("fopen (\"%s\", \"%s\"): %s, %s, %s\n", f, m, strerror(errno));
 }
 
-extern void Lfclose (FILE *f) {
+extern void Lfclose(FILE *f) {
     ASSERT_BOXED("fclose", f);
 
     fclose(f);
 }
 
-extern void *LreadLine () {
+extern void *LreadLine() {
     char *buf;
 
     if (scanf("%m[^\n]", &buf) == 1) {
@@ -1129,10 +1223,10 @@ extern void *LreadLine () {
 
     if (errno != 0) failure("readLine (): %s\n", strerror(errno));
 
-    return (void *)BOX(0);
+    return (void *) BOX(0);
 }
 
-extern void *Lfread (char *fname) {
+extern void *Lfread(char *fname) {
     FILE *f;
 
     ASSERT_STRING("fread", fname);
@@ -1140,8 +1234,8 @@ extern void *Lfread (char *fname) {
     f = fopen(fname, "r");
 
     if (f && fseek(f, 0l, SEEK_END) >= 0) {
-        long  size = ftell(f);
-        void *s    = LmakeString(BOX(size));
+        long size = ftell(f);
+        void *s = LmakeString(BOX(size));
 
         rewind(f);
 
@@ -1154,7 +1248,7 @@ extern void *Lfread (char *fname) {
     failure("fread (\"%s\"): %s\n", fname, strerror(errno));
 }
 
-extern void Lfwrite (char *fname, char *contents) {
+extern void Lfwrite(char *fname, char *contents) {
     FILE *f;
 
     ASSERT_STRING("fwrite:1", fname);
@@ -1169,28 +1263,28 @@ extern void Lfwrite (char *fname, char *contents) {
     }
 }
 
-extern void *Lfexists (char *fname) {
+extern void *Lfexists(char *fname) {
     FILE *f;
 
     ASSERT_STRING("fexists", fname);
 
     f = fopen(fname, "r");
 
-    if (f) return (void *)BOX(1);
+    if (f) return (void *) BOX(1);
 
-    return (void *)BOX(0);
+    return (void *) BOX(0);
 }
 
-extern void *Lfst (void *v) { return Belem(v, BOX(0)); }
+extern void *Lfst(void *v) { return Belem(v, BOX(0)); }
 
-extern void *Lsnd (void *v) { return Belem(v, BOX(1)); }
+extern void *Lsnd(void *v) { return Belem(v, BOX(1)); }
 
-extern void *Lhd (void *v) { return Belem(v, BOX(0)); }
+extern void *Lhd(void *v) { return Belem(v, BOX(0)); }
 
-extern void *Ltl (void *v) { return Belem(v, BOX(1)); }
+extern void *Ltl(void *v) { return Belem(v, BOX(1)); }
 
 /* Lread is an implementation of the "read" construct */
-extern int Lread () {
+extern int Lread() {
     int result = BOX(0);
 
     printf("> ");
@@ -1200,25 +1294,25 @@ extern int Lread () {
     return BOX(result);
 }
 
-extern int Lbinoperror (void) {
+extern int Lbinoperror(void) {
     fprintf(stderr, "ERROR: POINTER ARITHMETICS is forbidden; EXIT\n");
     exit(1);
 }
 
-extern int Lbinoperror2 (void) {
+extern int Lbinoperror2(void) {
     fprintf(stderr, "ERROR: Comparing BOXED and UNBOXED value ; EXIT\n");
     exit(1);
 }
 
 /* Lwrite is an implementation of the "write" construct */
-extern int Lwrite (int n) {
+extern int Lwrite(int n) {
     printf("%d\n", UNBOX(n));
     fflush(stdout);
 
     return 0;
 }
 
-extern int Lrandom (int n) {
+extern int Lrandom(int n) {
     ASSERT_UNBOXED("Lrandom, 0", n);
 
     if (UNBOX(n) <= 0) { failure("invalid range in random: %d\n", UNBOX(n)); }
@@ -1226,7 +1320,7 @@ extern int Lrandom (int n) {
     return BOX(random() % UNBOX(n));
 }
 
-extern int Ltime () {
+extern int Ltime() {
     struct timespec t;
 
     clock_gettime(CLOCK_MONOTONIC_RAW, &t);
@@ -1234,25 +1328,25 @@ extern int Ltime () {
     return BOX(t.tv_sec * 1000000 + t.tv_nsec / 1000);
 }
 
-extern void set_args (int argc, char *argv[]) {
+extern void set_args(int argc, char *argv[]) {
     data *a;
-    int   n = argc;
-    int  *p = NULL;
-    int   i;
+    int n = argc;
+    int *p = NULL;
+    int i;
 
     PRE_GC();
 
     p = LmakeArray(BOX(n));
-    push_extra_root((void **)&p);
+    push_extra_root((void **) &p);
 
-    for (i = 0; i < n; i++) { ((int *)p)[i] = (int)Bstring(argv[i]); }
+    for (i = 0; i < n; i++) { ((int *) p)[i] = (int) Bstring(argv[i]); }
 
-    pop_extra_root((void **)&p);
+    pop_extra_root((void **) &p);
     POST_GC();
 
     global_sysargs = p;
     global_stdout = stdout;
     global_stderr = stderr;
 
-    push_extra_root((void **)&global_sysargs);
+    push_extra_root((void **) &global_sysargs);
 }
