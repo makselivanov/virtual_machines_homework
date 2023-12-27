@@ -32,16 +32,17 @@ struct measured_time {
 const size_t DEFAULT_LOOP_SIZE = 1 << 20;
 const size_t MAX_SIZE = 1 << 23;
 const double TIME_THRESHOLD = 1.2;
-const size_t MAX_ASSOC = 128;
+const size_t MAX_ASSOC = 32;
 const size_t MIN_ASSOC = 4;
-const size_t MIN_WAY_SIZE = 1 << 8; //16
-const size_t MAX_WAY_SIZE = 1 << 20;
-const size_t EPOCHS = 5;
+const size_t MIN_WAY_SIZE = 1 << 10;
+const size_t MAX_WAY_SIZE = 1 << 16;
+const size_t EPOCHS = 20;
 const size_t MIN_CACHE_LINE = 8;
 std::random_device dev;
 std::mt19937 rng(dev());
 
 alignas(256) uint32_t array[MAX_SIZE];
+long long trash = 0;
 
 measured_time
 measure(size_t assoc_size, size_t loop_size = DEFAULT_LOOP_SIZE) {
@@ -50,6 +51,7 @@ measure(size_t assoc_size, size_t loop_size = DEFAULT_LOOP_SIZE) {
     for (size_t loop = 0; loop < assoc_size; loop++) {
         index = array[index];
     }
+    trash ^= index;
     index = 0;
     //measure
     auto start = std::chrono::high_resolution_clock::now();
@@ -58,6 +60,7 @@ measure(size_t assoc_size, size_t loop_size = DEFAULT_LOOP_SIZE) {
         index = array[index];
     }
     auto finish = std::chrono::high_resolution_clock::now();
+    trash ^= index;
     std::chrono::duration<double, std::nano> duration = finish - start;
     double duration_per_loop = double(duration.count()) / loop_size;
     return {duration, duration_per_loop};
