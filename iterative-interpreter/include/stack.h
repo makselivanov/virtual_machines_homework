@@ -12,15 +12,15 @@ extern int32_t *__gc_stack_top, *__gc_stack_bottom;
 
 const int STACK_CAPACITY = sizeof(int32_t) * (1 << 23);
 
-inline int32_t box(int32_t value) {
+static inline int32_t box(int32_t value) {
     return (value << 1) | 1;
 }
 
-inline int32_t unbox(int32_t value) {
+static inline int32_t unbox(int32_t value) {
     return value >> 1;
 }
 
-inline bool is_boxed(int32_t value) {
+static inline bool is_boxed(int32_t value) {
     return value & 1;
 }
 

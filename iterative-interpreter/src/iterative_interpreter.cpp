@@ -205,7 +205,7 @@ void iterative_interpreter::eval_binop(char op) {
     stack::push_box(res);
 }
 
-void iterative_interpreter::eval_const(int value) {
+inline void iterative_interpreter::eval_const(int value) {
     stack::push_box(value);
 }
 
@@ -232,11 +232,11 @@ inline void iterative_interpreter::eval_sta() {
     stack::push(reinterpret_cast<int32_t>(Bsta(v, i, x)));
 }
 
-void iterative_interpreter::eval_jmp(int32_t offset) {
+inline void iterative_interpreter::eval_jmp(int32_t offset) {
     ip = bf->code_ptr + offset;
 }
 
-void iterative_interpreter::eval_end() {
+inline void iterative_interpreter::eval_end() {
     int32_t result = stack::pop();
     stack::set_stack_top(fp);
     fp = reinterpret_cast<int32_t *>(stack::pop());
@@ -246,15 +246,15 @@ void iterative_interpreter::eval_end() {
     stack::push(result);
 }
 
-void iterative_interpreter::eval_drop() {
+inline void iterative_interpreter::eval_drop() {
     stack::pop();
 }
 
-void iterative_interpreter::eval_dup() {
+inline void iterative_interpreter::eval_dup() {
     stack::push(stack::peek());
 }
 
-void iterative_interpreter::eval_swap() {
+inline void iterative_interpreter::eval_swap() {
     int32_t v1 = stack::pop();
     int32_t v2 = stack::pop();
 
@@ -262,47 +262,47 @@ void iterative_interpreter::eval_swap() {
     stack::push(v2);
 }
 
-void iterative_interpreter::eval_elem() {
+inline void iterative_interpreter::eval_elem() {
     int32_t i = stack::pop();
     void *p = reinterpret_cast<void *>(stack::pop());
     stack::push(reinterpret_cast<int32_t>(Belem(p, i)));
 }
 
-void iterative_interpreter::eval_ld(int32_t l, int32_t i) {
+inline void iterative_interpreter::eval_ld(int32_t l, int32_t i) {
     int32_t value = *lookup(l, i);
     stack::push(value);
 }
 
-void iterative_interpreter::eval_lda(int32_t l, int32_t i) {
+inline void iterative_interpreter::eval_lda(int32_t l, int32_t i) {
     int32_t *ptr = lookup(l, i);
     stack::push(reinterpret_cast<int32_t>(ptr));
 }
 
-void iterative_interpreter::eval_st(int32_t l, int32_t i) {
+inline void iterative_interpreter::eval_st(int32_t l, int32_t i) {
     int32_t *ptr = lookup(l, i);
     int32_t value = stack::peek();
     *ptr = value;
 }
 
-void iterative_interpreter::eval_cjmpz(int32_t addr) {
+inline void iterative_interpreter::eval_cjmpz(int32_t addr) {
     if (stack::unbox_pop() == 0) {
         jmp(addr);
     }
 }
 
-void iterative_interpreter::eval_cjmpnz(int32_t addr) {
+inline void iterative_interpreter::eval_cjmpnz(int32_t addr) {
     if (stack::unbox_pop() != 0) {
         jmp(addr);
     }
 }
 
-void iterative_interpreter::eval_begin(int32_t argc, int32_t nlocals) {
+inline void iterative_interpreter::eval_begin(int32_t argc, int32_t nlocals) {
     stack::push(reinterpret_cast<int32_t>(fp));
     fp = stack::get_stack_top();
     stack::reserve(nlocals);
 }
 
-void iterative_interpreter::eval_closure(int32_t addr, int32_t argc) {
+inline void iterative_interpreter::eval_closure(int32_t addr, int32_t argc) {
     int32_t args[argc];
     for (int i = 0; i < argc; i++) {
         char l = BYTE;
@@ -315,7 +315,7 @@ void iterative_interpreter::eval_closure(int32_t addr, int32_t argc) {
     stack::push(reinterpret_cast<int32_t>(result));
 }
 
-void iterative_interpreter::eval_callc(int32_t argc) {
+inline void iterative_interpreter::eval_callc(int32_t argc) {
     void *label = Belem(reinterpret_cast<int32_t *>(stack::peek(argc)), box(0));
     stack::reverse(argc);
     stack::push(reinterpret_cast<int32_t>(ip));
@@ -323,7 +323,7 @@ void iterative_interpreter::eval_callc(int32_t argc) {
     ip = reinterpret_cast<char *>(label);
 }
 
-void iterative_interpreter::eval_call(int32_t addr, int32_t argc) {
+inline void iterative_interpreter::eval_call(int32_t addr, int32_t argc) {
     //fprintf(stdout, "eval_call addr=%d, argc=%d\n", addr, argc);
     stack::reverse(argc);
     stack::push(reinterpret_cast<int32_t>(ip));
@@ -331,23 +331,23 @@ void iterative_interpreter::eval_call(int32_t addr, int32_t argc) {
     jmp(addr);
 }
 
-void iterative_interpreter::eval_tag(char *name, int32_t n) {
+inline void iterative_interpreter::eval_tag(char *name, int32_t n) {
     void *d = reinterpret_cast<void *>(stack::pop());
     int32_t t = LtagHash(name);
     stack::push(Btag(d, t, box(n)));
 }
 
-void iterative_interpreter::eval_array(int32_t n) {
+inline void iterative_interpreter::eval_array(int32_t n) {
     void *d = reinterpret_cast<void *>(stack::pop());
     int32_t res = Barray_patt(d, box(n));
     stack::push(res);
 }
 
-void iterative_interpreter::eval_fail(int32_t h, int32_t l) {
+inline void iterative_interpreter::eval_fail(int32_t h, int32_t l) {
     failure("FAIL %d %d", h, l);
 }
 
-void iterative_interpreter::eval_line(int32_t _) {
+inline void iterative_interpreter::eval_line(int32_t _) {
     //nothing
 }
 
@@ -383,26 +383,26 @@ void iterative_interpreter::eval_patt(char ch) {
     stack::push(result);
 }
 
-void iterative_interpreter::eval_call_lread() {
+inline void iterative_interpreter::eval_call_lread() {
     int32_t value = Lread();
     stack::push(value);
 }
 
-void iterative_interpreter::eval_call_lwrite() {
+inline void iterative_interpreter::eval_call_lwrite() {
     int32_t value = stack::pop();
     stack::push(Lwrite(value));
 }
 
-void iterative_interpreter::eval_call_llength() {
+inline void iterative_interpreter::eval_call_llength() {
     stack::push(Llength(reinterpret_cast<void *>(stack::pop())));
 }
 
-void iterative_interpreter::eval_call_lstring() {
+inline void iterative_interpreter::eval_call_lstring() {
     void *str = Lstring(reinterpret_cast<void *>(stack::pop()));
     stack::push(reinterpret_cast<int32_t>(str));
 }
 
-void iterative_interpreter::eval_call_barray(int32_t n) {
+inline void iterative_interpreter::eval_call_barray(int32_t n) {
     //fprintf(stdout, "eval_call_barray n=%d\n", n);
     stack::reverse(n);
     auto result = reinterpret_cast<int32_t>(Barray_arr(box(n), stack::get_stack_top()));
