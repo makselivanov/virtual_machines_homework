@@ -25,6 +25,7 @@ build:
 
 clean:
 	$(MAKE) clean -C regression
+	$(MAKE) clean -C performance
 	rm -r build
 
 regression-all: regression regression-expressions
@@ -35,3 +36,6 @@ regression: all
 regression-expressions: all
 	$(MAKE) clean check -j8 -C regression/expressions
 	$(MAKE) clean check -j8 -C regression/deep-expressions
+
+performance: all
+	$(MAKE) clean check -j8 -C performance
