@@ -15,6 +15,7 @@ typedef struct {
     int *global_ptr;              /* A pointer to the global area                   */
     int stringtab_size;          /* The size (in bytes) of the string table        */
     int global_area_size;        /* The size (in words) of global area             */
+    int bytecode_size;           /* The size (in bytes) of bytecode                */
     int public_symbols_number;   /* The number of public symbols                   */
     char buffer[0];
 } bytefile;

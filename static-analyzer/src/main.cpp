@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
     char *ip = bf->code_ptr;
     std::map<instruction, size_t> counter;
 
-    while (true) {
+    while (ip < bf->code_ptr + bf->bytecode_size) {
         char *next_ip = disassemble_instruction(nullptr, bf, ip);
         if (next_ip == nullptr) break;
         long len = next_ip - ip;
