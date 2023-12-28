@@ -9,9 +9,9 @@ check: $(TESTS)
 
 $(TESTS): %: %.lama
 	@echo $@
-	$(LAMAC) -b $< > $@.bc
-	echo 0 | `which time` -f "$@\t%U" $(LAMAC) -i $<
-	`which time` -f "$@\t%U" $(MAINC) $@.bc
+	@$(LAMAC) -b $< > $@.bc
+	@echo 0 | `which time` -f "\n$@\tRECU\t%U user seconds" $(LAMAC) -i $<
+	@`which time` -f "$@\tITER\t%U user seconds" $(MAINC) $@.bc
 
 clean:
 	$(RM) test*.log *.s *~ $(TESTS) *.i
