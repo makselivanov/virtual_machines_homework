@@ -92,6 +92,8 @@ extern void *Bclosure_arr(int bn, void *entry, int *values);
 #define CALL_LSRTING   0x73
 #define CALL_BARRAY    0x74
 
+#define MAX_CLOSURE_ARGC 32
+
 using namespace boxing;
 
 iterative_interpreter::iterative_interpreter(bytefile *file) : bf(file), ip(bf->code_ptr) {
@@ -304,14 +306,21 @@ inline void iterative_interpreter::eval_begin(int32_t argc, int32_t nlocals) {
 }
 
 inline void iterative_interpreter::eval_closure(int32_t addr, int32_t argc) {
-    int32_t args[argc];
+    if (argc > MAX_CLOSURE_ARGC) {
+        failure("Too much argc for closure");
+    }
+    //FIX remove array
+    int32_t args[MAX_CLOSURE_ARGC];
     for (int i = 0; i < argc; i++) {
         char l = BYTE;
         int value = INT;
         args[i] = *lookup(l, value);
+        //stack::push(*lookup(l, value));
     }
 
-    void *result = Bclosure_arr(box(argc), bf->code_ptr + addr, args);
+    void *result = Bclosure_arr(box(argc), bf->code_ptr + addr, args); //stack::get_stack_top()
+
+    //stack::drop(argc);
 
     stack::push(reinterpret_cast<int32_t>(result));
 }
