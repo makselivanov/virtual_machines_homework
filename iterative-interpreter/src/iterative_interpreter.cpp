@@ -92,6 +92,7 @@ extern void *Bclosure_arr(int bn, void *entry, int *values);
 #define CALL_LSRTING   0x73
 #define CALL_BARRAY    0x74
 
+using namespace boxing;
 
 iterative_interpreter::iterative_interpreter(bytefile *file) : bf(file), ip(bf->code_ptr) {
     __init();

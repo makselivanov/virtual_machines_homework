@@ -6,23 +6,12 @@ extern "C" {
 };
 
 #include "utility"
+#include "box.h"
 //#define DEBUG_PRINT 1
 
 extern int32_t *__gc_stack_top, *__gc_stack_bottom;
 
 const int STACK_CAPACITY = sizeof(int32_t) * (1 << 23);
-
-static inline int32_t box(int32_t value) {
-    return (value << 1) | 1;
-}
-
-static inline int32_t unbox(int32_t value) {
-    return value >> 1;
-}
-
-static inline bool is_boxed(int32_t value) {
-    return value & 1;
-}
 
 namespace stack {
 
@@ -99,11 +88,11 @@ namespace stack {
     }
 
     inline int32_t unbox_pop() {
-        return unbox(pop());
+        return boxing::unbox(pop());
     }
 
     inline void push_box(int32_t value) {
-        push(box(value));
+        push(boxing::box(value));
     }
 
     inline void drop(int32_t n) {
