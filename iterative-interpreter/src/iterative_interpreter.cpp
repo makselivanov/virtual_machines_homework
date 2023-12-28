@@ -34,6 +34,65 @@ extern void *Bclosure_arr(int bn, void *entry, int *values);
 # define STRING get_string (this->bf, INT)
 # define FAIL   failure ("ERROR: invalid opcode %d-%d\n", h, l)
 
+#define STOP           0xF
+#define BINOP          0x0
+#define BINOP_ADD      0x01
+#define BINOP_SUB      0x02
+#define BINOP_PROD     0x03
+#define BINOP_DIV      0x04
+#define BINOP_MOD      0x05
+#define BINOP_LESS     0x06
+#define BINOP_ELESS    0x07
+#define BINOP_GREATER  0x08
+#define BINOP_EGREATER 0x09
+#define BINOP_EQUAL    0x0A
+#define BINOP_NEQUAL   0x0B
+#define BINOP_AND      0x0C
+#define BINOP_OR       0x0D
+#define BLOCK_DATE     0x1
+#define BLOCK_CONST    0x10
+#define BLOCK_STRING   0x11
+#define BLOCK_SEXP     0x12
+#define BLOCK_STI      0x13
+#define BLOCK_STA      0x14
+#define BLOCK_JMP      0x15
+#define BLOCK_END      0x16
+#define BLOCK_RET      0x17
+#define BLOCK_DROP     0x18
+#define BLOCK_DUP      0x19
+#define BLOCK_SWAP     0x1A
+#define BLOCK_ELEM     0x1B
+#define LD             0x2
+#define LDA            0x3
+#define ST             0x4
+#define BLOCK_MOVE     0x5
+#define CJMPZ          0x50
+#define CJMPNZ         0x51
+#define BEGIN          0x52
+#define CBEGIN         0x53
+#define CLOSUSRE       0x54
+#define CALLC          0x55
+#define CALL           0x56
+#define PLACE_TAG      0x57
+#define ARRAY          0x58
+#define CALL_FAIL      0x59
+#define LINE           0x5A
+#define PATT           0x6
+#define PATT_BSTRING   0x60
+#define PATT_BSTRING_T 0x61
+#define PATT_BARRAY_T  0x62
+#define PATT_BSEXP_T   0x63
+#define PATT_BBOXED    0x64
+#define PATT_BUNBOXED  0x65
+#define PATT_BCLOSURE_T 0x66
+#define BLOCK_CALL     0x7
+#define CALL_LREAD     0x70
+#define CALL_LWRITE    0x71
+#define CALL_LLENGTH   0x72
+#define CALL_LSRTING   0x73
+#define CALL_BARRAY    0x74
+
+
 iterative_interpreter::iterative_interpreter(bytefile *file) : bf(file), ip(bf->code_ptr) {
     __init();
     stack::init();
@@ -71,14 +130,18 @@ int32_t *iterative_interpreter::binded(int32_t i) {
 }
 
 int32_t *iterative_interpreter::lookup(char l, int32_t i) {
+#define GLOBAL 0
+#define LOCAL 1
+#define ARGS 2
+#define BINDED 3
     switch (l) {
-        case 0:
+        case GLOBAL:
             return global(i);
-        case 1:
+        case LOCAL:
             return local(i);
-        case 2:
+        case ARGS:
             return args(i);
-        case 3:
+        case BINDED:
             return binded(i);
         default:
             failure("Unexpected location: %d", l);
@@ -97,43 +160,43 @@ void iterative_interpreter::eval_binop(char op) {
     int32_t x = stack::unbox_pop();
     int32_t res;
     switch (op) {
-        case 1:
+        case BINOP_ADD:
             res = x + y;
             break;
-        case 2:
+        case BINOP_SUB:
             res = x - y;
             break;
-        case 3:
+        case BINOP_PROD:
             res = x * y;
             break;
-        case 4:
+        case BINOP_DIV:
             res = x / y;
             break;
-        case 5:
+        case BINOP_MOD:
             res = x % y;
             break;
-        case 6:
+        case BINOP_LESS:
             res = x < y;
             break;
-        case 7:
+        case BINOP_ELESS:
             res = x <= y;
             break;
-        case 8:
+        case BINOP_GREATER:
             res = x > y;
             break;
-        case 9:
+        case BINOP_EGREATER:
             res = x >= y;
             break;
-        case 10:
+        case BINOP_EQUAL:
             res = x == y;
             break;
-        case 11:
+        case BINOP_NEQUAL:
             res = x != y;
             break;
-        case 12:
+        case BINOP_AND:
             res = x && y;
             break;
-        case 13:
+        case BINOP_OR:
             res = x || y;
             break;
         default:
@@ -288,33 +351,34 @@ void iterative_interpreter::eval_line(int32_t _) {
     //nothing
 }
 
-void iterative_interpreter::eval_patt(char l) {
+void iterative_interpreter::eval_patt(char ch) {
+    char h = 0xF0 & ch, l = 0x0F & ch;
     auto value = reinterpret_cast<int32_t *>(stack::pop());
-    int32_t result;
-    switch (l) {
-        case 0:
+    int32_t result = 0;
+    switch (ch) {
+        case PATT_BSTRING:
             result = Bstring_patt(value, reinterpret_cast<int32_t *>(stack::pop()));
             break;
-        case 1:
+        case PATT_BSTRING_T:
             result = Bstring_tag_patt(value);
             break;
-        case 2:
+        case PATT_BARRAY_T:
             result = Barray_tag_patt(value);
             break;
-        case 3:
+        case PATT_BBOXED:
             result = Bsexp_tag_patt(value);
             break;
-        case 4:
+        case PATT_BSEXP_T:
             result = Bboxed_patt(value);
             break;
-        case 5:
+        case PATT_BUNBOXED:
             result = Bunboxed_patt(value);
             break;
-        case 6:
+        case PATT_BCLOSURE_T:
             result = Bclosure_tag_patt(value);
             break;
         default:
-            failure("Unexpected patt: %d", l);
+            FAIL;
     }
     stack::push(result);
 }
@@ -354,57 +418,57 @@ void iterative_interpreter::eval() {
 #ifdef DEBUG_PRINT
         fprintf(stdout, "h = %d | l = %d\n", h, l);
 #endif
-        int arg1, arg2;
-        char *str;
+        int arg1 = 0;
+        char *str = nullptr;
         switch (h) {
-            case 15:
+            case STOP:
                 return;
 
                 /* BINOP */
-            case 0:
-                eval_binop(l);
+            case BINOP:
+                eval_binop(x);
                 break;
 
-            case 1:
-                switch (l) {
-                    case 0:
+            case BLOCK_DATE:
+                switch (x) {
+                    case BLOCK_CONST:
                         eval_const(INT);
                         break;
 
-                    case 1:
+                    case BLOCK_STRING:
                         eval_string(STRING);
                         break;
 
-                    case 2:
+                    case BLOCK_SEXP:
                         str = STRING;
                         eval_sexp(str, INT);
                         break;
 
-                    case 4:
+                    case BLOCK_STA:
                         eval_sta();
                         break;
 
-                    case 5:
+                    case BLOCK_JMP:
                         eval_jmp(INT);
                         break;
 
-                    case 6:
+                    case BLOCK_END:
                         eval_end();
                         break;
 
-                    case 8:
+                    case BLOCK_DROP:
                         eval_drop();
                         break;
 
-                    case 9:
+                    case BLOCK_DUP:
                         eval_dup();
                         break;
 
-                    case 10:
+                    case BLOCK_SWAP:
                         eval_swap();
                         break;
 
-                    case 11:
+                    case BLOCK_ELEM:
                         eval_elem();
                         break;
 
@@ -413,61 +477,61 @@ void iterative_interpreter::eval() {
                 }
                 break;
 
-            case 2:
+            case LD:
                 eval_ld(l, INT);
                 break;
-            case 3:
+            case LDA:
                 eval_lda(l, INT);
                 break;
-            case 4:
+            case ST:
                 eval_st(l, INT);
                 break;
 
-            case 5:
-                switch (l) {
-                    case 0:
+            case BLOCK_MOVE:
+                switch (x) {
+                    case CJMPZ:
                         eval_cjmpz(INT);
                         break;
 
-                    case 1:
+                    case CJMPNZ:
                         eval_cjmpnz(INT);
                         break;
 
-                    case 2:
-                    case 3:
+                    case BEGIN:
+                    case CBEGIN:
                         arg1 = INT;
                         eval_begin(arg1, INT);
                         break;
 
-                    case 4:
+                    case CLOSUSRE:
                         arg1 = INT;
                         eval_closure(arg1, INT);
                         break;
 
-                    case 5:
+                    case CALLC:
                         eval_callc(INT);
                         break;
 
-                    case 6:
+                    case CALL:
                         arg1 = INT;
                         eval_call(arg1, INT);
                         break;
 
-                    case 7:
+                    case PLACE_TAG:
                         str = STRING;
                         eval_tag(str, INT);
                         break;
 
-                    case 8:
+                    case ARRAY:
                         eval_array(INT);
                         break;
 
-                    case 9:
+                    case CALL_FAIL:
                         arg1 = INT;
                         eval_fail(arg1, INT);
                         break;
 
-                    case 10:
+                    case LINE:
                         eval_line(INT);
                         break;
 
@@ -476,29 +540,29 @@ void iterative_interpreter::eval() {
                 }
                 break;
 
-            case 6:
-                eval_patt(l);
+            case PATT:
+                eval_patt(x);
                 break;
 
-            case 7: {
-                switch (l) {
-                    case 0:
+            case BLOCK_CALL: {
+                switch (x) {
+                    case CALL_LREAD:
                         eval_call_lread();
                         break;
 
-                    case 1:
+                    case CALL_LWRITE:
                         eval_call_lwrite();
                         break;
 
-                    case 2:
+                    case CALL_LLENGTH:
                         eval_call_llength();
                         break;
 
-                    case 3:
+                    case CALL_LSRTING:
                         eval_call_lstring();
                         break;
 
-                    case 4:
+                    case CALL_BARRAY:
                         eval_call_barray(INT);
                         break;
 
